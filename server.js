@@ -21,7 +21,8 @@ app.use(cors());
 app.use(express.json());
 
 let raceData = [];
-let queuePosition = 0;
+let queuePosition = -1;
+let areAllRacesFinished = true;
 let flagStatus = "";
 
 const timer = new Timer();
@@ -70,12 +71,22 @@ io.on('connection', (socket) => {
 
     // immediately send current race data to the newly connected client
     socket.emit("raceData", raceData);
-    //socket.emit("queuePosition", queuePosition);
+    socket.emit("queuePosition", queuePosition);
+    socket.emit('areAllRacesFinished', areAllRacesFinished);
 
     socket.on("createRace", (newRace) => {
+        console.log("Current value of areAllRacesFinished:", areAllRacesFinished);
         raceData.push({ raceName: newRace.raceName, isOngoing: newRace.isOngoing, drivers: [], timeRemainingOngoingRace: 0, timeRemainingNextRace: 0 });
         timer.initializeTimer(newRace.raceName); // Initialize timer for the new race
         io.emit("raceData", raceData); // Broadcast updated race data to all clients
+        console.log("here");
+        if (areAllRacesFinished === true) {
+            queuePosition = raceData.length-1;
+            areAllRacesFinished = false;
+            console.log("areAllRacesFinished value: ", areAllRacesFinished);
+            io.emit("areAllRacesFinished", areAllRacesFinished);
+            io.emit('queuePosition', queuePosition);
+        }
     });
 
     socket.on("updateRaceStatus", ({ raceName, isOngoing }) => {
@@ -97,6 +108,8 @@ io.on('connection', (socket) => {
     socket.on("deleteRace", (raceName) => {
         raceData = raceData.filter((race) => race.raceName !== raceName);
         io.emit("raceData", raceData); // Broadcast updated race data to all clients
+        queuePosition = raceData.length-1;
+        io.emit('queuePosition', queuePosition);
     });
 
     socket.on("updateRaceDrivers", ({ raceName, drivers }) => {
@@ -121,7 +134,12 @@ io.on('connection', (socket) => {
 
     socket.on('updateQueuePosition', (position) => {
         queuePosition = position;
-        io.emit('queuePosition', position);
+        io.emit('queuePosition', queuePosition);
+    })
+
+    socket.on('updateAreAllRacesFinished', (data) => {
+        areAllRacesFinished = data;
+        io.emit('areAllRacesFinished', areAllRacesFinished);
     })
 
     socket.on('getDataForSpectator', () => {
