@@ -18,6 +18,7 @@ function RaceControl() {
     //const previousRaceDataLength = useRef(0);
     const [currentRaceIndex, setCurrentRaceIndex] = useState(-1);
     const [areAllRacesFinished, setAreAllRacesFinished] = useState(true);
+    const [queuePositionFetched, setQueuePositionFetched] = useState(false);
     //const currentRaceIndex = useRef(0);
     const currentRace = raceData[currentRaceIndex] || {};
 
@@ -27,6 +28,7 @@ function RaceControl() {
         const handleRaceQueue = (queue) => {
             console.log("queue pos from server: " + queue);
             setCurrentRaceIndex(queue);
+            setQueuePositionFetched(true);
         };
         socket.on("queuePosition", handleRaceQueue);
         return () => {
@@ -37,6 +39,8 @@ function RaceControl() {
     useEffect(() => {
         // Request the latest race data and queue position from the server
         //socket.emit("getQueuePosition");
+        if (!queuePositionFetched) return;
+
         socket.emit("getRaceData");
 
         /*const handleRaceQueue = (queue) => {
@@ -78,7 +82,7 @@ function RaceControl() {
             socket.off("timerUpdate", handleTimerUpdate);
             socket.off("areAllRacesFinished", handleAreAllRacesFinished);
         };
-    }, [currentRace?.raceName, currentRaceIndex]);
+    }, [currentRace?.raceName, queuePositionFetched]);
 
 
     const startTimer = () => {
@@ -127,7 +131,7 @@ function RaceControl() {
                     socket.emit("updateQueuePosition", nextRaceIndex);
                 } else {
                     setAreAllRacesFinished(true);
-                    console.log("i was here, currentraceindex should be -1 but is:", currentRaceIndex);
+                    //console.log("i was here, currentraceindex should be -1 but is:", currentRaceIndex);
                     socket.emit("updateAreAllRacesFinished", true);
                 }
                 break;
