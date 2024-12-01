@@ -22,14 +22,27 @@ function RaceControl() {
     const currentRace = raceData[currentRaceIndex] || {};
 
     useEffect(() => {
-        // Request the latest race data and queue position from the server
-        socket.emit("getRaceData");
         socket.emit("getQueuePosition");
 
         const handleRaceQueue = (queue) => {
+            console.log("queue pos from server: " + queue);
+            setCurrentRaceIndex(queue);
+        };
+        socket.on("queuePosition", handleRaceQueue);
+        return () => {
+            socket.off("queuePosition", handleRaceQueue);
+        };
+    }, []);
+
+    useEffect(() => {
+        // Request the latest race data and queue position from the server
+        //socket.emit("getQueuePosition");
+        socket.emit("getRaceData");
+
+        /*const handleRaceQueue = (queue) => {
             console.log("Queue pos from server: " + queue)
             setCurrentRaceIndex(queue); // Synchronize with server
-        };
+        };*/
 
         const handleRaceData = (data) => {
             // If the areAllRacesFinished is true and new races are added, set it to the first new race
@@ -54,18 +67,18 @@ function RaceControl() {
             }
         };
 
-        socket.on("queuePosition", handleRaceQueue);
+        //socket.on("queuePosition", handleRaceQueue);
         socket.on("raceData", handleRaceData);
         socket.on("timerUpdate", handleTimerUpdate);
         socket.on("areAllRacesFinished", handleAreAllRacesFinished);
 
         return () => {
-            socket.off("queuePosition", handleRaceQueue);
+            //socket.off("queuePosition", handleRaceQueue);
             socket.off("raceData", handleRaceData);
             socket.off("timerUpdate", handleTimerUpdate);
             socket.off("areAllRacesFinished", handleAreAllRacesFinished);
         };
-    }, [currentRace?.raceName]);
+    }, [currentRace?.raceName, currentRaceIndex]);
 
 
     const startTimer = () => {
