@@ -1,3 +1,4 @@
+/*
 import { Link } from 'react-router-dom';
 
 function Header() {
@@ -23,5 +24,6 @@ function Header() {
         </nav>
     );
 }
+*/
 
-export default Header;
+//export default Header;

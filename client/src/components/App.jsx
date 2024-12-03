@@ -6,6 +6,8 @@ import FrontDesk from './front-desk/front-desk.jsx'
 import RaceControl from './race-control/race-control.jsx'
 import Login from "./login-and-main/login.jsx";
 import Navigator from "./login-and-main/navigator.jsx";
+import "materialize-css/dist/css/materialize.min.css";
+import "materialize-css/dist/js/materialize.min.js";
 import PageNotFound404 from "./login-and-main/pageNotFound404.jsx";
 import Spectator from "./spectator/spectator.jsx";
 import LapLineObserver from "./lap-line-tracker/lap-line-observer.jsx";

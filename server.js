@@ -132,6 +132,10 @@ io.on('connection', (socket) => {
         socket.emit("queuePosition", queuePosition);
     });
 
+    socket.on('getAreAllRacesFinished', () => {
+        socket.emit("areAllRacesFinished", areAllRacesFinished);
+    });
+
     socket.on('updateQueuePosition', (position) => {
         queuePosition = position;
         io.emit('queuePosition', queuePosition);

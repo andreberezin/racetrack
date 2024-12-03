@@ -16,43 +16,31 @@ function RaceControl() {
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [raceStarted, setRaceStarted] = useState(false);
     //const previousRaceDataLength = useRef(0);
-    const [currentRaceIndex, setCurrentRaceIndex] = useState(-1);
+    const [currentRaceIndex, setCurrentRaceIndex] = useState();
     const [areAllRacesFinished, setAreAllRacesFinished] = useState(true);
-    const [queuePositionFetched, setQueuePositionFetched] = useState(false);
+    //const [queuePositionFetched, setQueuePositionFetched] = useState(false);
     //const currentRaceIndex = useRef(0);
     const currentRace = raceData[currentRaceIndex] || {};
 
     useEffect(() => {
-        socket.emit("getQueuePosition");
-
-        const handleRaceQueue = (queue) => {
-            console.log("queue pos from server: " + queue);
-            setCurrentRaceIndex(queue);
-            setQueuePositionFetched(true);
-        };
-        socket.on("queuePosition", handleRaceQueue);
-        return () => {
-            socket.off("queuePosition", handleRaceQueue);
-        };
-    }, []);
-
-    useEffect(() => {
         // Request the latest race data and queue position from the server
-        //socket.emit("getQueuePosition");
-        if (!queuePositionFetched) return;
-
+        socket.emit("getQueuePosition");
+        //if (!queuePositionFetched) return;
+        socket.emit("getAreAllRacesFinished");
         socket.emit("getRaceData");
 
-        /*const handleRaceQueue = (queue) => {
+        const handleRaceQueue = (queue) => {
             console.log("Queue pos from server: " + queue)
             setCurrentRaceIndex(queue); // Synchronize with server
-        };*/
+        };
 
         const handleRaceData = (data) => {
             // If the areAllRacesFinished is true and new races are added, set it to the first new race
+            console.log("data.length:", data.length);
+            console.log("currentRaceIndex+1:", currentRaceIndex+1);
             if (areAllRacesFinished === true && data.length > currentRaceIndex+1) {
-                console.log("data.length:", data.length);
-                console.log("currentRaceIndex+1:", currentRaceIndex+1);
+                //console.log("data.length:", data.length);
+                //console.log("currentRaceIndex+1:", currentRaceIndex+1);
                 setAreAllRacesFinished(false);
                 socket.emit("updateAreAllRacesFinished", false);
             }
@@ -71,18 +59,18 @@ function RaceControl() {
             }
         };
 
-        //socket.on("queuePosition", handleRaceQueue);
+        socket.on("queuePosition", handleRaceQueue);
         socket.on("raceData", handleRaceData);
         socket.on("timerUpdate", handleTimerUpdate);
         socket.on("areAllRacesFinished", handleAreAllRacesFinished);
 
         return () => {
-            //socket.off("queuePosition", handleRaceQueue);
+            socket.off("queuePosition", handleRaceQueue);
             socket.off("raceData", handleRaceData);
             socket.off("timerUpdate", handleTimerUpdate);
             socket.off("areAllRacesFinished", handleAreAllRacesFinished);
         };
-    }, [currentRace?.raceName, queuePositionFetched]);
+    }, [currentRace?.raceName, currentRaceIndex, areAllRacesFinished]);
 
 
     const startTimer = () => {
@@ -169,7 +157,10 @@ function RaceControl() {
                     <ul>
                         {!raceStarted && areAllRacesFinished !== true && (
                             <>
-                            <button onClick={handleRaceMode} value="start">Start race</button>
+                            <button
+                                className="waves-effect waves-light btn"
+/*                                style={{backgroundColor: "blue", color: "white"}}*/
+                                onClick={handleRaceMode} value="start">Start race</button>
                         <h2>Drivers List:</h2>
                         {driversToDisplay.map((driver, index) => (
                             <li key={index}>
