@@ -36,7 +36,15 @@ function LapLineObserver() {
 
     // Handle incoming flag changes -> race modes
     useEffect(() => {
-        socket.emit("broadcastFlagButtonChange");
+        //socket.emit("FlagPageConnected");
+        socket.emit("flagButtonWasClicked");
+
+
+        // socket.on("currentFlagStatus", (newFlagStatus) => {
+        //     setRaceMode(newFlagStatus);
+        //     console.log("Getting flag status from server")
+        // });
+
         socket.on("broadcastFlagButtonChange", (newFlagStatus) => {
             setRaceMode(newFlagStatus);
             console.log("Getting flag status from server")
@@ -44,6 +52,7 @@ function LapLineObserver() {
 
         // Clean up the socket listener on unmount
         return () => {
+            //socket.off("currentFlagStatus");
             socket.off("broadcastFlagButtonChange");
         };
     }, []);
@@ -59,8 +68,10 @@ function LapLineObserver() {
             handleRaceStop();
         }
 
-        if (raceMode === "start") {
-            setRaceMode("safe");
+        if (raceMode === "start" || raceMode === "safe" || raceMode === "danger" || raceMode === "hazard") {
+            // if (raceMode === "start") {
+            //     setRaceMode("safe");
+            // }
             setIsDisabled(false);
             setRaceStarted(true);
             console.log("The race has started!");
@@ -73,14 +84,15 @@ function LapLineObserver() {
             const onGoingRace = raceData.filter((race) => race.isOngoing === true);
             setCurrentRaceName(onGoingRace[0].raceName);
             if (onGoingRace.length > 0) {
-                console.log("inside handleRaceData")
-                const updatedRaceDrivers = onGoingRace[0].drivers.map((driver) => ({
-                    ...driver,
-                    laps: 0,
-                    lapTimes: [],
-                    lapTimesMS: [],
-                    fastestLap: null,
-                }));
+                // const updatedRaceDrivers = onGoingRace[0].drivers.map((driver) => ({
+                //     ...driver,
+                //     laps: 0,
+                //     lapTimes: [],
+                //     lapTimesMS: [],
+                //     fastestLap: null,
+                // }));
+
+                const updatedRaceDrivers = onGoingRace[0].drivers
 
                 const initialElapsedTimes = {};
                 updatedRaceDrivers.forEach((driver) => {
@@ -110,7 +122,6 @@ function LapLineObserver() {
     // Fetch race data
     useEffect(() => {
         if (raceStarted) {
-            console.log("Race has started, fetching data...");
             socket.emit("sendRaceData");
 
             socket.on("sendRaceData", (data) => {
@@ -166,13 +177,8 @@ function LapLineObserver() {
     const driverCrossedFinishLine = (driverName) => {
         setRaceDrivers((prev) =>
             prev.map((driver) => {
-                if (driver.name === driverName) {
-                    if (driver.laps === 0) {
-                        return {
-                            ...driver,
-                            laps: driver.laps + 1,
-                        };
-                    } else {
+                if (driver.name === driverName && elapsedTimes[driverName] !== 0) {
+                    // console.log(elapsedTimes[driverName])
                         const newLapTimes = [
                             ...driver.lapTimes,
                             formatLapTime(elapsedTimes[driverName] || 0),
@@ -187,7 +193,6 @@ function LapLineObserver() {
                             lapTimes: newLapTimes,
                             lapTimesMS: newLapTimesMS,
                             fastestLap: formatLapTime(fastestLapTime(newLapTimesMS)),
-                        };
                     }
                 }
                 return driver;
@@ -201,7 +206,6 @@ function LapLineObserver() {
 
     // latest lap data
     useEffect(() => {
-        console.log(currentRaceName);
         console.log(raceDrivers)
         socket.emit("updateRaceDrivers", {raceName: currentRaceName, drivers: raceDrivers})
     }, [raceDrivers]); // or use elapsedTimes as a dependency so current lap times can be updated
