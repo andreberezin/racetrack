@@ -109,6 +109,7 @@ io.on('connection', (socket) => {
         const race = raceData.find((race) => race.raceName === raceName);
         console.log("i got new race driver data");
         if (race) {
+            console.log("updating race drivers on the server")
             race.drivers = drivers; // Update drivers for the specified race
         }
         console.log(raceData);
@@ -143,15 +144,54 @@ io.on('connection', (socket) => {
 
     //Handle flag status here
     socket.on('flagButtonWasClicked', (data) => {
-        flagStatus = data;
+        if (data !== undefined) {
+            flagStatus = data;
+        }
+        if (data === "start") {
+            flagStatus = "safe";
+        }
+        console.log("flag status on server: " + flagStatus);
         io.emit('broadcastFlagButtonChange', flagStatus);
     });
 
     socket.on('FlagPageConnected', () => {
+        //console.log("flag status on server: " + flagStatus);
         socket.emit('currentFlagStatus', flagStatus);
     })
 
+    // socket.on('getCurrentRaceTimer', (timer) => {
+    //     socket.emit('currentRaceTimer', () => {
+    //         const onGoingRace = raceData.filter((race) => race.isOngoing === true);
+    //         if (onGoingRace.length > 0) {
+    //             timer = onGoingRace[0].timeRemainingOngoingRace;
+    //             console.log(timer)
+    //             return timer;
+    //         } else {
+    //             console.error("No ongoing race exists.");
+    //         }
+    //     })
+    // })
 
+    let intervalId = null; // Variable to store the interval ID
+
+    socket.on('getCurrentRaceTimer', () => {
+        if (intervalId) {
+            clearInterval(intervalId); // Clear any existing interval
+        }
+
+        intervalId = setInterval(() => {
+            const onGoingRace = raceData.filter((race) => race.isOngoing === true);
+            if (onGoingRace.length > 0) {
+                const timer = onGoingRace[0].timeRemainingOngoingRace;
+                socket.emit('currentRaceTimer', timer);
+            } else {
+                // No ongoing race, clear the interval and emit null once
+                clearInterval(intervalId);
+                intervalId = null; // Reset the interval ID
+                socket.emit('currentRaceTimer', null);
+            }
+        }, 100); // Emit the timer every 100 milliseconds
+    });
 });
 
 
