@@ -152,7 +152,7 @@ io.on('connection', (socket) => {
         if (data === "start") {
             flagStatus = "safe";
         }
-        console.log("flag status on server: " + flagStatus);
+        //console.log("flag status on server: " + flagStatus);
         io.emit('broadcastFlagButtonChange', flagStatus);
     });
 
