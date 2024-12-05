@@ -31,19 +31,11 @@ function LapLineObserver() {
         const storedIsDisabled = localStorage.getItem("isDisabled");
         return storedIsDisabled === "true";
     });
+    const [currentLapTimes, setCurrentLapTimes] = useState({});
 
-    const timerInterval = useRef({});
-
-    // Handle incoming flag changes -> race modes
+    // Handle incoming flag changes (race modes)
     useEffect(() => {
-        //socket.emit("FlagPageConnected");
         socket.emit("flagButtonWasClicked");
-
-
-        // socket.on("currentFlagStatus", (newFlagStatus) => {
-        //     setRaceMode(newFlagStatus);
-        //     console.log("Getting flag status from server")
-        // });
 
         socket.on("broadcastFlagButtonChange", (newFlagStatus) => {
             setRaceMode(newFlagStatus);
@@ -52,12 +44,11 @@ function LapLineObserver() {
 
         // Clean up the socket listener on unmount
         return () => {
-            //socket.off("currentFlagStatus");
             socket.off("broadcastFlagButtonChange");
         };
     }, []);
 
-    // use flag changes -> race mode
+    // use flag changes (race mode) to start and finish the race
     useEffect(() => {
         console.log("Flag status changed to: " + raceMode);
 
@@ -65,7 +56,8 @@ function LapLineObserver() {
             setIsDisabled(true);
             setRaceStarted(false);
             console.log("The race has finished! Final results:");
-            handleRaceStop();
+            //handleRaceStop();
+            stopStopwatch(raceDrivers)
         }
 
         if (raceMode === "start" || raceMode === "safe" || raceMode === "danger" || raceMode === "hazard") {
@@ -84,28 +76,7 @@ function LapLineObserver() {
             const onGoingRace = raceData.filter((race) => race.isOngoing === true);
             setCurrentRaceName(onGoingRace[0].raceName);
             if (onGoingRace.length > 0) {
-                // const updatedRaceDrivers = onGoingRace[0].drivers.map((driver) => ({
-                //     ...driver,
-                //     laps: 0,
-                //     lapTimes: [],
-                //     lapTimesMS: [],
-                //     fastestLap: null,
-                // }));
-
                 const updatedRaceDrivers = onGoingRace[0].drivers
-
-                const initialElapsedTimes = {};
-                updatedRaceDrivers.forEach((driver) => {
-                    initialElapsedTimes[driver.name] = 0;
-                });
-
-                // Compare and update `elapsedTimes` only if it has changed
-                setElapsedTimes((prev) => {
-                    if (JSON.stringify(prev) !== JSON.stringify(initialElapsedTimes)) {
-                        return initialElapsedTimes;
-                    }
-                    return prev; // No change, skip re-render
-                });
 
                 // Compare and update `raceDrivers` only if it has changed
                 setRaceDrivers((prev) => {
@@ -127,9 +98,6 @@ function LapLineObserver() {
             socket.on("sendRaceData", (data) => {
                 console.log("New data fetched");
                 handleRaceData(data);
-                // if (raceStarted === false) {
-                //     handleRaceData(data);
-                // }
             });
 
             // Clean up the socket listener on unmount
@@ -141,55 +109,59 @@ function LapLineObserver() {
         }
     }, [raceStarted, handleRaceData]);
 
-    // Start timer for a driver
-    const handleRaceStart = (driverName) => {
-        if (!timerInterval.current[driverName]) {
-            clearInterval(timerInterval.current[driverName]);
-
-            timerInterval.current[driverName] = setInterval(() => {
-                    setElapsedTimes((prev) => ({
-                        ...prev,
-                        [driverName]: (prev[driverName] || 0) + 10,
-                    }));
-            }, 10);
-        }
-    };
-
-    // Stop and reset timer for a driver
-    const handleReset = (driverName) => {
-        clearInterval(timerInterval.current[driverName]);
-        delete timerInterval.current[driverName];
-        setElapsedTimes((prev) => ({
-            ...prev,
-            [driverName]: 0,
-        }));
-    };
-
-
-    const handleRaceStop = (driverName) => {
-        raceDrivers.forEach((driver) => {
-            clearInterval(timerInterval.current[driver.name]);
+    // always get the latest stopwatch data form the server
+    useEffect(() => {
+        socket.emit("getCurrentLapTimesInRealTime");
+        socket.on("currentLapTimesInRealTime", (lapTimes) => {
+            if (lapTimes !== null) {
+                setCurrentLapTimes(lapTimes)
+            }
         });
+        return () => {
+            socket.off("currentLapTimesInRealTime");
+        };
+    }, [raceDrivers]);
+
+    // emit the latest lap data when a driver finishes a lap
+    useEffect(() => {
         console.log(raceDrivers)
+        socket.emit("updateRaceDrivers", {raceName: currentRaceName, drivers: raceDrivers})
+    }, [raceDrivers]);
+
+    // functions to handle stopwatch logic through the server
+    const startStopwatch = (driverName) => {
+        socket.emit("startStopwatch", driverName);
+    };
+
+    const resetStopwatch = (driverName) => {
+        socket.emit("resetStopwatch", driverName);
+    };
+
+    const stopStopwatch = (raceDrivers) => {
+        socket.emit("stopStopwatch", raceDrivers);
+    };
+
+    const initializeStopwatch = (driverName) => {
+        socket.emit("initializeStopwatch", driverName);
     };
 
     // Handle lap completion for a driver
     const driverCrossedFinishLine = (driverName) => {
         setRaceDrivers((prev) =>
             prev.map((driver) => {
-                if (driver.name === driverName && elapsedTimes[driverName] !== 0) {
-                    // console.log(elapsedTimes[driverName])
+                console.log(currentLapTimes[driverName])
+                if (driver.name === driverName && currentLapTimes[driverName] !== undefined) {
                         const newLapTimes = [
                             ...driver.lapTimes,
-                            formatLapTime(elapsedTimes[driverName] || 0),
+                            formatLapTime(currentLapTimes[driverName] || 0),
                         ];
                         const newLapTimesMS = [
                             ...driver.lapTimesMS,
-                            elapsedTimes[driverName] || 0,
+                            currentLapTimes[driverName] || 0,
                         ];
                         return {
                             ...driver,
-                            laps: driver.laps + 1,
+                            finishedLaps: driver.finishedLaps + 1,
                             lapTimes: newLapTimes,
                             lapTimesMS: newLapTimesMS,
                             fastestLap: formatLapTime(fastestLapTime(newLapTimesMS)),
@@ -198,17 +170,10 @@ function LapLineObserver() {
                 return driver;
             })
         );
-        // todo when flag status changes to "safe" the timers reset. Currently only when the first flag status after start is "safe" then the timers reset
-        // todo emit data to server
-        handleReset(driverName);
-        handleRaceStart(driverName);
+        initializeStopwatch(driverName);
+        resetStopwatch(driverName);
+        startStopwatch(driverName);
     };
-
-    // latest lap data
-    useEffect(() => {
-        console.log(raceDrivers)
-        socket.emit("updateRaceDrivers", {raceName: currentRaceName, drivers: raceDrivers})
-    }, [raceDrivers]); // or use elapsedTimes as a dependency so current lap times can be updated
 
     return (
         <div className="LapLineObserver">
@@ -227,7 +192,7 @@ function LapLineObserver() {
                             >
                                 {driver.name}
                                 <br />
-                                {formatLapTime(elapsedTimes[driver.name] || 0)}
+                                {formatLapTime(currentLapTimes[driver.name] || 0)}
                             </button>
                         ))
                     )}

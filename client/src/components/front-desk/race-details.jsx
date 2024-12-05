@@ -47,7 +47,7 @@ function RaceDetails() {
         }
 
         const newDriver = { name: driverName, car: lastAssignedCar + 1,
-            laps: 0,
+            finishedLaps: 0,
             lapTimes: [],
             lapTimesMS: [],
             fastestLap: null};
