@@ -15,7 +15,7 @@
     "dev": "cross-env NODE_ENV=development npm run concurrently & sleep 5 && ngrok start --config .ngrok.yml racetrack",
     "render": "npm run concurrently",
     "render-prod": "npm run concurrently",
-    "build": "vite build"
+    "build": "cd client && vite build"
   },
   "keywords": [],
   "author": "",
