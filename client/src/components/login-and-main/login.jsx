@@ -35,7 +35,12 @@ function Login({ setRole }) {
             body: JSON.stringify(dataToSend),
         };
 
-        fetch("http://localhost:3000/api/login", fetchOptions)
+        const API_BASE_URL =
+            process.env.NODE_ENV === "development"
+                ? "https://racetrack-ns5c.onrender.com" // Replace with your actual backend WebSocket URL
+                : "http://localhost:3000"; // Local backend for development
+
+        fetch(`${API_BASE_URL}/api/login`, fetchOptions)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
