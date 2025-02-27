@@ -88,6 +88,7 @@ function Login({ setRole }) {
                     <option value="Lap line obs">Lap line obs</option>
                     <option value="DEV">Developer</option>
                 </Form.Select>
+                <p>Password is "11" for all roles. Log in as "DEV" to check out all the features.</p>
                 <p>{loginStatusText}</p>
                 <button type="submit">Login</button>
             </form>
