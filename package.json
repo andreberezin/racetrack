@@ -13,9 +13,9 @@
     "start": "cross-env NODE_ENV=production npm run concurrently",
     "start-ngrok": "cross-env NODE_ENV=production npm run concurrently & ngrok start --config .ngrok.yml racetrack",
     "dev": "cross-env NODE_ENV=development npm run concurrently & sleep 5 && ngrok start --config .ngrok.yml racetrack",
-    "render": "npm run concurrently",
-    "render-prod": "npm run concurrently",
-    "build": "cd client && vite build"
+    "render": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
+    "render-prod": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
+    "build": "cd client && npm run build"
   },
   "keywords": [],
   "author": "",
