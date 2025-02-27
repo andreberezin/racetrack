@@ -2,6 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  base: '/',  // If deployed at the root of your domain (e.g., https://yourdomain.com/)
+  build: {
+    outDir: 'dist',  // Where Vite will output the built files
+  },
   plugins: [react()],
   server: {
     proxy: {
