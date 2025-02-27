@@ -13,6 +13,8 @@ const StopwatchesSchema = require('./models/Stopwatch');
 const LastRaceData = require('./models/LastRaceData');
 const Variable = require('./models/Variable');
 mongoose.connect(keys.mongoURI);
+const path = require("path");
+const helmet = require("helmet");
 
 const app = express();
 const server = createServer(app);
@@ -27,6 +29,31 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// Apply security headers with relaxed CSP for scripts and styles
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+				styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+				fontSrc: ["'self'", "https://fonts.gstatic.com"],
+				imgSrc: ["'self'", "data:"],
+				connectSrc: ["'self'", "wss:"], // WebSockets support
+			},
+		},
+	})
+);
+
+// Serve frontend
+app.use(express.static(path.join(__dirname, "client", "dist")));
+
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+});
+
+
 
 let raceData = [];
 let queuePosition = -1;
