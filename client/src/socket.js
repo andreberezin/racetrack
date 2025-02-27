@@ -2,7 +2,7 @@
 import { io } from "socket.io-client";
 
 const BACKEND_URL =
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === "development"
         ? "wss://racetrack-ns5c.onrender.com" // Replace with your actual backend WebSocket URL
         : "http://localhost:3000"; // Local backend for development
 
