@@ -15,7 +15,7 @@
     "dev": "cross-env NODE_ENV=development npm run concurrently & sleep 5 && ngrok start --config .ngrok.yml racetrack",
     "render": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
     "render-prod": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
-    "build": "cd client && npm run build"
+    "build": "cd client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
