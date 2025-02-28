@@ -4,6 +4,8 @@
 
 The Beachside Racetrack system is designed to manage races in real time, ensuring smooth operation and providing up-to-date information for employees, race drivers, and spectators. Built using **Node.js**, **React**, and **Socket.IO**, it supports multiple personas and features dynamic race management interfaces.
 
+This was a team project with Marius Soon and Artur Stoljar. My contribution to the project was building the back-end and front-end to /next-race, /race-countdown and /lap-line-tracker. Additionally, I set up Ngrok, built /settings, added full-screen functionality and made a lot of the finishing touches on the UX/UI part including adding the light and dark theme toggle.
+
 ---
 
 ## How to Start the Server
@@ -16,7 +18,7 @@ The Beachside Racetrack system is designed to manage races in real time, ensurin
 ### Setup Instructions
 1. Clone this repository:
    ```bash
-   git clone https://gitea.kood.tech/andreberezin/racetrack.git
+   git clone https://github.com/andreberezin/racetrack.git
    cd racetrack
    ```
 
