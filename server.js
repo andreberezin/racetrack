@@ -68,25 +68,25 @@ let raceDuration;
 let durationBetweenRaces;
 
 // Validate keys.env
-const requiredEnvVars = [
-	'SAFETY_OF',
-	'LAP_LINE_OBS',
-	'RECEPTIONIST',
-	// 'RACE_DRIVER',
-	'DEV',
-];
-
-const validateEnvVars = () => {
-	const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-
-	if (missingVars.length > 0) {
-		console.error('The following environment variables are missing:');
-		missingVars.forEach(varName => console.error(`- ${varName}`));
-		console.error('Please set the required environment variables before starting the server.');
-		process.exit(1); // Exit the process with a failure code
-	}
-};
-validateEnvVars();
+// const requiredEnvVars = [
+// 	'SAFETY_OF',
+// 	'LAP_LINE_OBS',
+// 	'RECEPTIONIST',
+// 	// 'RACE_DRIVER',
+// 	'DEV',
+// ];
+//
+// const validateEnvVars = () => {
+// 	const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+//
+// 	if (missingVars.length > 0) {
+// 		console.error('The following environment variables are missing:');
+// 		missingVars.forEach(varName => console.error(`- ${varName}`));
+// 		console.error('Please set the required environment variables before starting the server.');
+// 		process.exit(1); // Exit the process with a failure code
+// 	}
+// };
+// validateEnvVars();
 
 // Load existing races from MongoDB into memory
 (async () => {
