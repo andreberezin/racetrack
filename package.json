@@ -7,14 +7,15 @@
   "scripts": {
     "install-all": "npm install && cd client && npm install",
     "server": "nodemon server.js",
+    "server-node": "node server.js",
     "client": "npm run start --prefix client",
     "tunnel": "ngrok start --config .ngrok.yml racetrack",
     "concurrently": "concurrently \"npm run server\" \"npm run client\"",
     "start": "cross-env NODE_ENV=production npm run concurrently",
     "start-ngrok": "cross-env NODE_ENV=production npm run concurrently & ngrok start --config .ngrok.yml racetrack",
     "dev": "cross-env NODE_ENV=development npm run concurrently & sleep 5 && ngrok start --config .ngrok.yml racetrack",
-    "render": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
-    "render-prod": "concurrently \"npm run server\" \"serve -s client/dist -l 3000\"",
+    "render": "concurrently \"npm run server-node\" \"serve -s client/dist -l 3000\"",
+    "render-prod": "concurrently \"npm run server-node\" \"serve -s client/dist -l 3000\"",
     "build": "cd client && npm install && npm run build"
   },
   "keywords": [],
