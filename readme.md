@@ -22,10 +22,14 @@ This was a team project with Marius Soon and Artur Stoljar. My contribution to t
    cd racetrack
    ```
 
+---
+
 2. Install dependencies:
    ```bash
    npm run install-all
    ```
+
+---
 
 3. Create a `.env` file at the root of the project with the following variables:
    ```env
@@ -34,15 +38,57 @@ This was a team project with Marius Soon and Artur Stoljar. My contribution to t
    LAP_LINE_OBS=<lap_line_observer_key>
    RECEPTIONIST=<receptionist_key>
    DEV=<developer_mode_key>
+   NGROK_TOKEN=<ngrok_token>
+   MONGO_URI=<mongodb_link>
    ```
-   
-4. Ngrok setup (OPTIONAL)
+
+---
+
+4. MongoDB setup
+
+   ### MongoDB setup guide
+
+   #### Step 1: Create a MongoDB Atlas Account
+   - Go to [MongoDB Atlas](https://www.mongodb.com) and sign up for a free account.
+   - Once signed in, click Create a New Project and give it a name like "RacetrackDB".
+
+   #### Step 2: Create a Database Cluster
+   - Click Build a Database and select Shared for a free-tier cluster.
+   - Choose a cloud provider and region (e.g., AWS, Google Cloud, or Azure).
+   - Name your cluster (e.g., "racetrack-cluster") and click Create Cluster.
+
+   #### Step 3: Set Up Database Access
+   - Navigate to the Database Access tab.
+   - Click Add New Database User, set a username and password, and select Read and Write access.
+   - Save this username and password, as you’ll need it for your .env file.
+
+   #### Step 4: Configure Network Access
+   - Go to the Network Access tab and click Add IP Address.
+   - Click Allow Access from Anywhere (or specify your IP for security).
+   - Click Confirm to save.
+
+   #### Step 5: Get Your Connection String
+   - In the Clusters section, click Connect > Connect Your Application.
+   - Copy the provided connection string, which looks like this:
+   ```bash
+   mongodb+srv://<username>:<password>@racetrack-cluster.mongodb.net/<dbname>?retryWrites=true&w=majority
+   ```
+   - Replace <username>, <password>, and <dbname> with your details.
+
+   #### Step 6: Add MongoDB URI to .env File
+   - Open your .env file and update the MONGO_URI variable:
+   ```bash
+   MONGO_URI=mongodb+srv://your_username:your_password@racetrack-cluster.mongodb.net/racetrackDB?retryWrites=true&w=majority
+   ```
+   - Save the file.
+
+---
+
+5. Ngrok setup (OPTIONAL)
 ### Ngrok Setup Guide
 
 #### What is Ngrok?
 Ngrok is a tool that creates secure tunnels to localhost, allowing your local server to be accessible via a public URL. It is especially useful for testing webhooks or sharing your local development server with team members.
-
----
 
 #### Step 1: Install Ngrok
 
@@ -56,8 +102,6 @@ Ngrok is a tool that creates secure tunnels to localhost, allowing your local se
       ngrok --version
       ```
     - You should see the installed version printed in your terminal.
-
----
 
 #### Step 2: Create an Ngrok Account and Set Up Authtoken
 
@@ -73,16 +117,16 @@ Ngrok is a tool that creates secure tunnels to localhost, allowing your local se
       ngrok config add-authtoken <your-authtoken>
       ```
     - Replace `<your-authtoken>` with the token from your Ngrok dashboard.
-
----
+    - Add the token to the keys.env file.
 
 #### Step 3: Configure Ngrok for Your Racetrack Application
 
 1. **Edit the `.ngrok.yml` Configuration File**:
     - In the root directory of your project, edit the file named `.ngrok.yml`. Replace the authtoken with your unique authtoken. 
 
+---
 
-5.Start the server:
+6. Start the server:
    - Development Mode (default 1-minute races):
      ```bash
      npm run dev
